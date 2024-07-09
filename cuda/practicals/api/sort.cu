@@ -13,18 +13,20 @@ void benchmark_gpu(thrust::host_vector<double> values_host)
     // fill a vector with random values
     size_t n = values_host.size();
     thrust::device_vector<double> values_device(n);
-
+    
     auto start = get_time();
 
     // TODO: copy values to device
     auto h2d_time = get_time() - start;
-
+    values_device = values_host;
     // TODO: sort values on device
     auto sort_time = get_time() - h2d_time;
-
+    //std::sort(std::device, values_device.begin(), values_device.end());
+    thrust::sort(thrust::device, values_device.begin(), values_device.end());
     // TODO: copy result back to host
     auto time_taken = get_time() - start;
-
+    values_host = values_device;
+    
     std::cout << "gpu performance including transfers: " << n / time_taken / 1e6 << " million keys/s\n";
     std::cout << "gpu performance without transfers: " << n / sort_time / 1e6 << " million keys/s\n";
 

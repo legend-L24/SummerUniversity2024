@@ -6,8 +6,17 @@
 
 // TODO CUDA kernel implementing axpy
 //      y = y + alpha*x
-//void axpy(int n, double alpha, const double* x, double* y)
-
+__global__
+void axpy_kernel(int n, double alpha, double* x, double* y){
+    //for (;i<n;i+=1){
+    if (i<n){
+        y[i] = y[i] + x[i]*alpha;
+    }
+}
+void axpy(int n, double alpha, double* x, double* y){
+    for (auto i=0; i<n; ++i)
+        y[i] = y[i] + x[i]*alpha;
+    }
 int main(int argc, char** argv) {
     size_t pow = read_arg(argc, argv, 1, 16);
     size_t n = 1 << pow;
@@ -31,6 +40,8 @@ int main(int argc, char** argv) {
     auto time_H2D = get_time() - start;
 
     // TODO calculate grid dimensions
+    auto block_size = 512;
+    auto num_blocks = (n+block_size-1)/block_size;
     // IGNORE for the first kernel writing exercise
 
     // synchronize the host and device so that the timings are accurate
@@ -38,7 +49,8 @@ int main(int argc, char** argv) {
 
     start = get_time();
     // TODO launch kernel (alpha=2.0)
-
+    double alpha = 2.0;
+    axpy_kernel<<<num_blocks,block_size>>>(n,alpha,x_device, y_device);
     cudaDeviceSynchronize();
     auto time_axpy = get_time() - start;
 
